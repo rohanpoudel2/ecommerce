@@ -3,20 +3,23 @@ const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.token;
   if (authHeader) {
+    const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.JWT_SEC, (err, user) => {
       if (err) {
         res.status(403).json({
           success: false,
-          msg: 'Not Valid Token'
+          msg: "Token Not Valid"
         });
       }
-      req.user = user;
-      next();
-    })
+      if (user) {
+        req.user = user;
+        next();
+      }
+    });
   } else {
     return res.status(401).json({
       success: false,
-      msg: 'Not Authenticated'
+      msg: "You are not authenticated!"
     });
   }
 };
@@ -28,12 +31,24 @@ const verifyTokenAndAuthorization = (req, res, next) => {
     } else {
       res.status(403).json({
         success: false,
-        msg: 'Not Allowed'
+        msg: "Not Allowed"
       });
     }
   });
-}
+};
+
+const verifyTokenAndAdmin = (req, res, next) => {
+  verifyToken(req, res, () => {
+    if (req.user.isAdmin) {
+      next();
+    } else {
+      res.status(403).json({
+        success: false,
+        msg: "Not Allowed"
+      });
+    }
+  });
+};
 
 
-
-module.exports = { verifyToken, verifyTokenAndAuthorization };
+module.exports = { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin };

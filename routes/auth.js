@@ -40,12 +40,14 @@ router.post('/login', async (req, res) => {
       });
     } else {
       const { password, ...others } = User._doc;
+      const tt = process.env.JWT_SEC;
+      console.log(tt)
       const accessToken = jwt.sign(
         {
           id: User._id,
           isAdmin: User.isAdmin
         },
-        "" + process.env.JTW_SEC,
+        tt,
         { expiresIn: "1d" }
       );
       res.status(200).json({
